@@ -1,0 +1,12 @@
+[
+    {
+        "backupFileName": "tt1.bak",
+        "backupFilePath": "C:/Users/Twhp/Desktop/tt1.bak",
+        "files": [
+            "C:/Users/Twhp/Desktop/test.txt"
+        ],
+        "frequency": "每分钟",
+        "nextTime": "Thu Dec 28 18:50:00 2023",
+        "password": "4"
+    }
+]

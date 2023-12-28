@@ -14,8 +14,8 @@
 #include<QJsonArray>
 #include<QJsonObject>
 #include"check.h"
-#include <QButtonGroup>
-
+#include<QButtonGroup>
+#include<QTableWidgetItem>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -25,12 +25,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     QButtonGroup* buttonGroup=new QButtonGroup(this);
     buttonGroup->addButton(ui->OnceBox);
-    buttonGroup->addButton(ui->DayBox);
+    buttonGroup->addButton(ui->DayBox_2);
     buttonGroup->addButton(ui->MinBox);
     buttonGroup->setExclusive(true);
 
 
     taskManager.init();
+    
+    
+
 
     //退出按钮
     connect(ui->ExitButton,&QPushButton::clicked,[=](){
@@ -42,13 +45,44 @@ MainWindow::MainWindow(QWidget *parent)
 
     //切换到备份页面
     connect(ui->BackupButton,&QPushButton::clicked,[=](){
-        ui->stackedWidget->setCurrentIndex(1);
+        ui->stackedWidget->setCurrentIndex(2);
     });
 
     //切换到恢复页面
     connect(ui->RestoreButton,&QPushButton::clicked,[=](){
-        ui->stackedWidget->setCurrentIndex(2);
+        ui->stackedWidget->setCurrentIndex(3);
     });
+
+    //切换到管理页面
+    connect(ui->manageButton, &QPushButton::clicked, [=]() {
+        ui->stackedWidget->setCurrentIndex(1);
+        int RowCount = ui->tableWidget->rowCount();
+        for (int i = RowCount - 1; i >= 0; i--)
+        {
+            ui->tableWidget->removeRow(i);
+        }
+        for (const auto& t : taskManager.getTaskList()) { showTasks(t); }
+        });
+    //删除task
+    connect(ui->DeleteTaskButton, &QPushButton::clicked, [=] {
+        int index = ui->tableWidget->currentRow();
+        if (index != -1)
+        {
+            taskManager.deleteTask(index);
+            ui->tableWidget->removeRow(index);
+        }
+        });
+
+    //清空task
+    connect(ui->ClearTaskButton, &QPushButton::clicked, [=] {
+        int RowCount = ui->tableWidget->rowCount();
+        for (int i = RowCount - 1; i >= 0; i--)
+        {
+            ui->tableWidget->removeRow(i);
+        }
+        taskManager.clear();
+        });
+    
 
     //返回主界面
     connect(ui->ReturnButton_1,&QPushButton::clicked,[=](){
@@ -57,7 +91,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ReturnButton_2,&QPushButton::clicked,[=](){
         ui->stackedWidget->setCurrentIndex(0);
     });
-
+    connect(ui->ReturnButton_3, &QPushButton::clicked, [=]() {
+        ui->stackedWidget->setCurrentIndex(0);
+        });
     //添加目录文件
     connect(ui->AddCatalogButton,&QPushButton::clicked,[=](){
         //打开文件目录
@@ -196,7 +232,7 @@ MainWindow::MainWindow(QWidget *parent)
         for (int i = 0; i < ui->FileList->topLevelItemCount(); ++i) {
             fileliststring.append(ui->FileList->topLevelItem(i)->text(1));
         }
-        if (ui->DayBox->isChecked()||ui->MinBox->isChecked()) {
+        if (ui->DayBox_2->isChecked()||ui->MinBox->isChecked()) {
             //QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("。"),
             //    QMessageBox::Yes, QMessageBox::Yes);
             QList<QString> files;
@@ -210,16 +246,6 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->PasswordBox ? ui->linePassword->text() : "",
                 ui->lineFilePath->text() + "/" + ui->lineFileName->text() + ".bak",
                 nextTime));
-            qDebug() << taskManager.getTaskNum();
-            for (auto task : taskManager.getTaskList()) {
-                qDebug() << task.bakName;
-                qDebug() << task.files;
-                qDebug() << task.freq;
-                qDebug() << task.isCode;
-
-                qDebug() << task.localPath;
-                qDebug() << task.nextTime;
-            }
         }
 
         Pack *packtool = new Pack;
@@ -364,7 +390,8 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "触发定时器";
    //执行定时任务
         if (taskManager.getTaskList().count())
-{
+        {
+            qDebug() << taskManager.getTaskList().count();
             for(auto& t : taskManager.getTaskList())
             {
                 //执行
@@ -414,7 +441,7 @@ MainWindow::MainWindow(QWidget *parent)
                         }
 
                     }
-                    taskManager.updateTime(index, ui->MinBox->isChecked() ? QDateTime::currentDateTime().addSecs(60) : QDateTime::currentDateTime().addDays(1));
+                    taskManager.updateTime(index,t.freq=="每分钟" ?  QDateTime::currentDateTime().addSecs(60): QDateTime::currentDateTime().addDays(1));
                     taskManager.writeJson();
                 }
             }
@@ -429,4 +456,29 @@ MainWindow::~MainWindow()
     delete ui;
 
 }
+void MainWindow::showTasks(Tasks t) {
+    QTableWidgetItem* bakName = new QTableWidgetItem;
+    QTableWidgetItem* freq = new QTableWidgetItem;
+    QTableWidgetItem* isCode = new QTableWidgetItem;
+    QTableWidgetItem* localPath = new QTableWidgetItem;
+
+    bakName->setText(t.bakName);
+    freq->setText(t.freq);
+    isCode->setText(t.isCode == "" ? "否" : "是");
+    localPath->setText(t.localPath);
+
+    int RowCount = ui->tableWidget->rowCount();
+    ui->tableWidget->insertRow(RowCount);
+    ui->tableWidget->setItem(RowCount, 0, bakName);
+    ui->tableWidget->setItem(RowCount, 1, freq);
+    ui->tableWidget->setItem(RowCount, 2, isCode);
+    ui->tableWidget->setItem(RowCount, 3, localPath);
+
+    ui->tableWidget->item(RowCount, 0)->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置居中
+    ui->tableWidget->item(RowCount, 1)->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->tableWidget->item(RowCount, 2)->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+    return;
+}
+
 

@@ -17,8 +17,8 @@
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>0</y>
+      <x>0</x>
+      <y>10</y>
       <width>771</width>
       <height>591</height>
      </rect>
@@ -81,9 +81,9 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="ExitButton">
+        <widget class="QPushButton" name="manageButton">
          <property name="text">
-          <string>退出</string>
+          <string>定时管理</string>
          </property>
         </widget>
        </item>
@@ -100,7 +100,85 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QPushButton" name="ExitButton">
+         <property name="text">
+          <string>退出</string>
+         </property>
+        </widget>
+       </item>
       </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_4">
+     <widget class="QTableWidget" name="tableWidget">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>20</y>
+        <width>701</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>备份名</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>备份频率</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>加密</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>本地路径</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QPushButton" name="ClearTaskButton">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>420</y>
+        <width>93</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>清空定时任务</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="DeleteTaskButton">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>420</y>
+        <width>93</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>删除定时任务</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="ReturnButton_3">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>420</y>
+        <width>93</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>返回</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="page_2">
@@ -330,9 +408,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="DayBox">
+          <widget class="QCheckBox" name="DayBox_2">
            <property name="text">
-            <string>每日</string>
+            <string>每天</string>
            </property>
           </widget>
          </item>

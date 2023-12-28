@@ -49,7 +49,7 @@ void Task::deleteTask(int index)
 void Task::clear()
 {
     taskList.clear();
-    QFile file("config.json");
+    QFile file("hzyconfig.json");
     file.open(QFile::WriteOnly);
     file.write("");
     file.close();
