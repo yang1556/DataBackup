@@ -170,18 +170,6 @@ MainWindow::MainWindow(QWidget *parent)
                 return;
             }
         }
-        if(!ui->OnceBox->isChecked()){
-            QList<QString> files;
-            files=taskManager.getTaskFiles();
-            QDateTime nextTime = QDateTime::currentDateTime().addDays(day ? 1 : 7);
-
-            taskManager.addTask(Tasks(files,
-                                      ui->lineFileName->text() + ".bak",
-                                      day ? "每天" : "每周",
-                                      ui->PasswordBox ? ui->linePassword->text() : "",
-                                      ui->lineFilePath->text() + "/" + ui->lineFileName->text() + ".bak",
-                                      nextTime));
-        }
         if (ui->PasswordBox->isChecked() && ui->linePassword->text().trimmed() == "") {
             QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("请输入密码。"),
                                      QMessageBox::Yes, QMessageBox::Yes);
@@ -198,6 +186,31 @@ MainWindow::MainWindow(QWidget *parent)
         QStringList fileliststring;
         for (int i = 0; i < ui->FileList->topLevelItemCount(); ++i) {
             fileliststring.append(ui->FileList->topLevelItem(i)->text(1));
+        }
+        if (ui->OnceBox->isChecked()) {
+            QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("。"),
+                QMessageBox::Yes, QMessageBox::Yes);
+            QList<QString> files;
+            //files = taskManager.getTaskFiles();
+            files = fileliststring.toList();
+            QDateTime nextTime = QDateTime::currentDateTime().addSecs(30);
+
+            taskManager.addTask(Tasks(files,
+                ui->lineFileName->text() + ".bak",
+                "每天",
+                ui->PasswordBox ? ui->linePassword->text() : "",
+                ui->lineFilePath->text() + "/" + ui->lineFileName->text() + ".bak",
+                nextTime));
+            qDebug() << taskManager.getTaskNum();
+            for (auto task : taskManager.getTaskList()) {
+                qDebug() << task.bakName;
+                qDebug() << task.files;
+                qDebug() << task.freq;
+                qDebug() << task.isCode;
+
+                qDebug() << task.localPath;
+                qDebug() << task.nextTime;
+            }
         }
 
         Pack *packtool = new Pack;
@@ -335,12 +348,14 @@ MainWindow::MainWindow(QWidget *parent)
         }
         //dir.rmdir("./TEMP");
     });
-
     //定时
+    timer.setInterval(5*1000);
+    
     connect(&timer, &QTimer::timeout,[=]{
+        qDebug() << "触发定时器";
    //执行定时任务
         if (taskManager.getTaskList().count())
-        {
+{
             for(auto& t : taskManager.getTaskList())
             {
                 //执行
@@ -353,7 +368,9 @@ MainWindow::MainWindow(QWidget *parent)
                     QStringList fileliststring;
                     for (int i = 0; i < ui->FileList->topLevelItemCount(); ++i) {
                         fileliststring.append(ui->FileList->topLevelItem(i)->text(1));
+                        qDebug() << fileliststring[i];
                     }
+                    
                     Pack *packtool = new Pack;
                     int errorCode = packtool->pack_to_tar(fileliststring,
                                                           ui->lineFileName->text() + ".tar",
@@ -391,14 +408,14 @@ MainWindow::MainWindow(QWidget *parent)
                         }
 
                     }
-                    taskManager.updateTime(index, t.nextTime.addDays(t.freq == "每日" ? 1 : 7));
+                    taskManager.updateTime(index, t.nextTime.addSecs(30));
                     taskManager.writeJson();
                 }
             }
         }
-        timer.start(60 * 1000);
-
+        
     });
+    timer.start();
 }
 
 MainWindow::~MainWindow()

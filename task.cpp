@@ -76,23 +76,29 @@ int Task::getTaskNum(){
 }
 void Task::writeJson()
 {
+    qDebug() << "writeJson";
     QFile file("config.json");
-    file.open(QFile::WriteOnly);
-    QJsonArray tasks;
+    QJsonArray tasksJson;
     for (auto task : taskList) {
-        QJsonObject information;
-        QJsonArray files;
-        for (auto file : task.files) {
-            files.append(file);
+        QJsonObject taskjson;
+        //task.files
+        QJsonArray filejson;
+        for (auto f : task.files) {
+            filejson.append(f);
         }
-        information["files"] = files;
-        information["backupFileName"] = task.bakName;
-        information["frequency"] = task.freq;
-        information["password"] = task.isCode;
-        information["backupFilePath"] = task.localPath;
-        information["nextTime"] = task.nextTime.toString();
-        tasks.append(information);
+        taskjson["files"] = filejson;
+        taskjson["backupFileName"] = task.bakName;
+        taskjson["frequency"] = task.freq;
+        taskjson["password"] = task.isCode;
+        taskjson["backupFilePath"] = task.localPath;
+        taskjson["nextTime"] = task.nextTime.toString();
+        tasksJson.append(taskjson);
     }
-    file.write(QJsonDocument(tasks).toJson());
-    file.close();
+    qDebug() << tasksJson;
+    if (file.open(QFile::WriteOnly)) {
+        QJsonDocument doc;
+        doc.setArray(tasksJson);
+        file.write(doc.toJson());
+        file.close();
+    }
 }
