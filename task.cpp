@@ -7,8 +7,8 @@ Task::Task()
 
 void Task::init()
 {
-    if (QFileInfo("config.json").exists()) {
-        QFile file("config.json");
+    if (QFileInfo("hzyconfig.json").exists()) {
+        QFile file("hzyconfig.json");
         file.open(QFile::ReadWrite);
         config = QJsonDocument::fromJson(file.readAll());
         file.close();
@@ -27,7 +27,7 @@ void Task::init()
                                   QDateTime::fromString(information["nextTime"].toString())));
         }
     } else {
-        QFile file("config.json");
+        QFile file("hzyconfig.json");
         file.open(QFile::WriteOnly);
         file.write("");
         file.close();
@@ -77,7 +77,7 @@ int Task::getTaskNum(){
 void Task::writeJson()
 {
     qDebug() << "writeJson";
-    QFile file("config.json");
+    QFile file("hzyconfig.json");
     QJsonArray tasksJson;
     for (auto task : taskList) {
         QJsonObject taskjson;
@@ -94,7 +94,6 @@ void Task::writeJson()
         taskjson["nextTime"] = task.nextTime.toString();
         tasksJson.append(taskjson);
     }
-    qDebug() << tasksJson;
     if (file.open(QFile::WriteOnly)) {
         QJsonDocument doc;
         doc.setArray(tasksJson);

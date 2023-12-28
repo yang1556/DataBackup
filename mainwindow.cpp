@@ -14,6 +14,7 @@
 #include<QJsonArray>
 #include<QJsonObject>
 #include"check.h"
+#include <QButtonGroup>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,7 +23,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);
 
+    QButtonGroup* buttonGroup=new QButtonGroup(this);
+    buttonGroup->addButton(ui->OnceBox);
+    buttonGroup->addButton(ui->DayBox);
+    buttonGroup->addButton(ui->MinBox);
+    buttonGroup->setExclusive(true);
+
+
     taskManager.init();
+
     //退出按钮
     connect(ui->ExitButton,&QPushButton::clicked,[=](){
         if (!(QMessageBox::information(this,tr("exit tip"),tr("Do you really want exit ?"),tr("Yes"),tr("No")))){
@@ -187,17 +196,17 @@ MainWindow::MainWindow(QWidget *parent)
         for (int i = 0; i < ui->FileList->topLevelItemCount(); ++i) {
             fileliststring.append(ui->FileList->topLevelItem(i)->text(1));
         }
-        if (ui->OnceBox->isChecked()) {
-            QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("。"),
-                QMessageBox::Yes, QMessageBox::Yes);
+        if (ui->DayBox->isChecked()||ui->MinBox->isChecked()) {
+            //QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("。"),
+            //    QMessageBox::Yes, QMessageBox::Yes);
             QList<QString> files;
             //files = taskManager.getTaskFiles();
             files = fileliststring.toList();
-            QDateTime nextTime = QDateTime::currentDateTime().addSecs(30);
+            QDateTime nextTime = ui->MinBox->isChecked()? QDateTime::currentDateTime().addSecs(60): QDateTime::currentDateTime().addDays(1);
 
             taskManager.addTask(Tasks(files,
                 ui->lineFileName->text() + ".bak",
-                "每天",
+                ui->MinBox->isChecked() ? "每分钟":"每天",
                 ui->PasswordBox ? ui->linePassword->text() : "",
                 ui->lineFilePath->text() + "/" + ui->lineFileName->text() + ".bak",
                 nextTime));
@@ -365,26 +374,23 @@ MainWindow::MainWindow(QWidget *parent)
                     for (QString f : t.files) {
                         files.append(f);
                     }
-                    QStringList fileliststring;
-                    for (int i = 0; i < ui->FileList->topLevelItemCount(); ++i) {
-                        fileliststring.append(ui->FileList->topLevelItem(i)->text(1));
-                        qDebug() << fileliststring[i];
-                    }
-                    
+                    int len = t.bakName.length();
+                    QString name = t.bakName.left(len - 4);
                     Pack *packtool = new Pack;
-                    int errorCode = packtool->pack_to_tar(fileliststring,
-                                                          ui->lineFileName->text() + ".tar",
-                                                          ui->PasswordBox->isChecked() ? ui->linePassword->text(): "");
+                    int errorCode = packtool->pack_to_tar(files,
+                                                          name + ".tar",
+                                                          t.isCode);
                     if (errorCode) {
                         QStringList message = {"正常执行", QStringLiteral("目标文件打开失败"), QStringLiteral("打开源文件失败")};
                         QMessageBox::information(this, QStringLiteral("提示"), message[errorCode],
                                                  QMessageBox::Yes, QMessageBox::Yes);
                         return;
                     }
+                    int i = t.localPath.lastIndexOf("/");
                     Compressor compressor;
-                    errorCode = compressor.compress(ui->lineFileName->text().toStdString() + ".tar",
-                                                    ui->lineFilePath->text().toStdString() + "/",
-                                                    ui->PasswordBox->isChecked() ? ui->linePassword->text().toStdString() : "");
+                    errorCode = compressor.compress(name.toStdString() + ".tar",
+                                                    t.localPath.left(i+1).toStdString() + "/",
+                                                    t.isCode.toStdString());
                     if (errorCode) {
                         QStringList message = {"正常执行", QStringLiteral("源文件扩展名不是bak"), QStringLiteral("打开源文件失败"), QStringLiteral("打开目标文件失败")};
                         QMessageBox::information(this, QStringLiteral("提示"), message[errorCode],
@@ -392,7 +398,7 @@ MainWindow::MainWindow(QWidget *parent)
                         qDebug() << errorCode;
                         return;
                     }
-                    QFile tarFile(ui->lineFileName->text() + ".tar");
+                    QFile tarFile(name + ".tar");
                     //保存tarFile
 
                     //
@@ -408,7 +414,7 @@ MainWindow::MainWindow(QWidget *parent)
                         }
 
                     }
-                    taskManager.updateTime(index, t.nextTime.addSecs(30));
+                    taskManager.updateTime(index, ui->MinBox->isChecked() ? QDateTime::currentDateTime().addSecs(60) : QDateTime::currentDateTime().addDays(1));
                     taskManager.writeJson();
                 }
             }

@@ -323,16 +323,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="DayBox">
+          <widget class="QCheckBox" name="MinBox">
            <property name="text">
-            <string>每天</string>
+            <string>每分钟</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="WeekBox">
+          <widget class="QCheckBox" name="DayBox">
            <property name="text">
-            <string>每周</string>
+            <string>每日</string>
            </property>
           </widget>
          </item>
