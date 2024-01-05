@@ -325,64 +325,64 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     //检查文件是否有错
-    connect(ui->CheckButton,&QPushButton::clicked,[=]{
-        QFile old_file_list("config.json");
-        old_file_list.open(QFile::ReadWrite);
-        QJsonDocument config = QJsonDocument::fromJson(old_file_list.readAll());
-        old_file_list.close();
-        string password;
-        QJsonArray tasks = config.array();
-        QList<QString> files;
-        for (auto task : tasks) {
-            auto information = task.toObject();
-            qDebug()<<(information["backupFilename"].toString()==ui->RestoreFileNameLine->text());
-            if(information["backupFilename"].toString()==ui->RestoreFileNameLine->text()){
-                for (auto file : information["files"].toArray()) {
-                    files.append(file.toString());
-                }
-                password = information["password"].toString().toStdString();
-            }
-        }
-        Compressor decompressor;
-        QDir dir;
-        dir.mkdir("./TEMP");
-        QFileInfo TEMP("./TEMP");
-        int errorCode = decompressor.decompress(ui->RestoreFileNameLine->text().toStdString(),
-                                                TEMP.absoluteFilePath().toStdString() + "/",
-                                                password);
-        if (errorCode) {
-            QStringList message = {"正常执行", QStringLiteral("源文件扩展名不是bak"), QStringLiteral("打开源文件失败"), QStringLiteral("打开目标文件失败"), QStringLiteral("文件过短，频率表不完整"), QStringLiteral("文件结尾不完整"), QStringLiteral("密码错误"), QStringLiteral("解码错误")};
-            QMessageBox::information(this, "提示", message[errorCode],
-                                     QMessageBox::Yes, QMessageBox::Yes);
-            dir.rmdir("./TEMP");
-            return;
-        }
+    //connect(ui->CheckButton,&QPushButton::clicked,[=]{
+    //    QFile old_file_list("config.json");
+    //    old_file_list.open(QFile::ReadWrite);
+    //    QJsonDocument config = QJsonDocument::fromJson(old_file_list.readAll());
+    //    old_file_list.close();
+    //    string password;
+    //    QJsonArray tasks = config.array();
+    //    QList<QString> files;
+    //    for (auto task : tasks) {
+    //        auto information = task.toObject();
+    //        qDebug()<<(information["backupFilename"].toString()==ui->RestoreFileNameLine->text());
+    //        if(information["backupFilename"].toString()==ui->RestoreFileNameLine->text()){
+    //            for (auto file : information["files"].toArray()) {
+    //                files.append(file.toString());
+    //            }
+    //            password = information["password"].toString().toStdString();
+    //        }
+    //    }
+    //    Compressor decompressor;
+    //    QDir dir;
+    //    dir.mkdir("./TEMP");
+    //    QFileInfo TEMP("./TEMP");
+    //    int errorCode = decompressor.decompress(ui->RestoreFileNameLine->text().toStdString(),
+    //                                            TEMP.absoluteFilePath().toStdString() + "/",
+    //                                            password);
+    //    if (errorCode) {
+    //        QStringList message = {"正常执行", QStringLiteral("源文件扩展名不是bak"), QStringLiteral("打开源文件失败"), QStringLiteral("打开目标文件失败"), QStringLiteral("文件过短，频率表不完整"), QStringLiteral("文件结尾不完整"), QStringLiteral("密码错误"), QStringLiteral("解码错误")};
+    //        QMessageBox::information(this, "提示", message[errorCode],
+    //                                 QMessageBox::Yes, QMessageBox::Yes);
+    //        dir.rmdir("./TEMP");
+    //        return;
+    //    }
 
-        QString tempFilename = "./TEMP/" + QFileInfo(ui->RestoreFileNameLine->text()).fileName();
-        tempFilename = tempFilename.left(tempFilename.length() - 3) + "tar";
+    //    QString tempFilename = "./TEMP/" + QFileInfo(ui->RestoreFileNameLine->text()).fileName();
+    //    tempFilename = tempFilename.left(tempFilename.length() - 3) + "tar";
 
-        errorCode = Pack::unpack_tar(QFileInfo(tempFilename).absoluteFilePath(), "./TEMP");
-        if (errorCode) {
-            QStringList message = {QStringLiteral("正常执行"),  QStringLiteral("打开源文件失败"), QStringLiteral("目标文件打开失败"),QStringLiteral("创建目录失败")};
-            QMessageBox::information(this, QStringLiteral("提示"), message[errorCode],
-                                     QMessageBox::Yes, QMessageBox::Yes);
-            return;
-        }
+    //    errorCode = Pack::unpack_tar(QFileInfo(tempFilename).absoluteFilePath(), "./TEMP");
+    //    if (errorCode) {
+    //        QStringList message = {QStringLiteral("正常执行"),  QStringLiteral("打开源文件失败"), QStringLiteral("目标文件打开失败"),QStringLiteral("创建目录失败")};
+    //        QMessageBox::information(this, QStringLiteral("提示"), message[errorCode],
+    //                                 QMessageBox::Yes, QMessageBox::Yes);
+    //        return;
+    //    }
 
-        QFile tarFile(tempFilename);
-        tarFile.remove();
+    //    QFile tarFile(tempFilename);
+    //    tarFile.remove();
 
 
-        auto difference = Check::check(files, "./TEMP");
-        if (difference) {
-            QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("备份无差异"),
-                                     QMessageBox::Yes, QMessageBox::Yes);
-        } else {
-            QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("备份有差异"),
-                                     QMessageBox::Yes, QMessageBox::Yes);
-        }
-        //dir.rmdir("./TEMP");
-    });
+    //    auto difference = Check::check(files, "./TEMP");
+    //    if (difference) {
+    //        QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("备份无差异"),
+    //                                 QMessageBox::Yes, QMessageBox::Yes);
+    //    } else {
+    //        QMessageBox::information(this, QStringLiteral("提示"), QStringLiteral("备份有差异"),
+    //                                 QMessageBox::Yes, QMessageBox::Yes);
+    //    }
+    //    //dir.rmdir("./TEMP");
+    //});
     //定时
     timer.setInterval(5*1000);
     
